@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "message-listener"
+name = "py-message-listener"
 version = "0.1"
 description = "sqs message listener using boto3"
 authors = ["Raju Komati <komatiraju032@gmail.com>"]
