@@ -13,11 +13,13 @@ logger.addHandler(NullHandler())
 
 class Listener:
     def __init__(self, destination: str, **kwargs):
-        self.destination = f'https://sqs.{kwargs["region_name"]}.amazonaws.com/{kwargs["aws_account_id"]}/{destination}'
+        region = kwargs.get('region_name', os.getenv('AWS_REGION'))
+        aws_account_id = kwargs.get('aws_account_id', os.getenv('AWS_ACCOUNT_ID'))
+        self.destination = f'https://sqs.{region}.amazonaws.com/{aws_account_id}/{destination}'
         self.delete_on_exception = kwargs.get('delete_on_exception', False)
         self.poll_after_seconds = kwargs.get('poll_after_seconds', 1)
         self.client = boto3.client(
-            'sqs', region_name=kwargs.get('region_name', os.getenv('AWS_DEFAULT_REGION')),
+            'sqs', region_name=region,
             aws_access_key_id=kwargs.get('aws_access_key_id', os.getenv('AWS_ACCESS_KEY_ID')),
             aws_secret_access_key=kwargs.get('aws_secret_access_key', os.getenv('AWS_SECRET_ACCESS_KEY'))
         )
