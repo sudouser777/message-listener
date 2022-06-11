@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "message-listener"
+version = "0.1"
+description = "sqs message listener using boto3"
+authors = ["Raju Komati <komatiraju032@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = 'listener'}]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+boto3 = "^1.24.7"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
