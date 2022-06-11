@@ -4,7 +4,7 @@ import time
 import uuid
 from logging import NullHandler
 from threading import Thread
-from typing import Union
+from typing import List
 
 import boto3
 from botocore.exceptions import ClientError
@@ -50,26 +50,22 @@ class Listener:
     def process_message(self, response: dict, handler: callable):
         logger.debug(response)
         if 'Messages' in response:
-            if self.max_number_of_messages == 1:
-                message = response['Messages'][0]['Body']
-                recept_handle = message['ReceiptHandle']
-            else:
-                message = [msg['Body'] for msg in response['Messages']]
-                recept_handle = [msg['ReceiptHandle'] for msg in message]
+            messages = [msg['Body'] for msg in response['Messages']]
+            recept_handles = [msg['ReceiptHandle'] for msg in response['Messages']]
             try:
-                if handler(message):
-                    self.delete_message(recept_handle)
+                if handler(messages[0] if len(messages) == 1 else messages):
+                    self.delete_message(recept_handles)
             except Exception as e:
                 if self.delete_on_exception:
-                    self.delete_message(recept_handle)
+                    self.delete_message(recept_handles)
                 logger.error('Error occurred while processing the message/s', exc_info=e)
 
-    def delete_message(self, recept_handle: Union[list, str]) -> None:
+    def delete_message(self, recept_handles: List) -> None:
         try:
-            if isinstance(recept_handle, str):
-                response = self.client.delete_message(QueueUrl=self.destination, ReceiptHandle=recept_handle)
+            if len(recept_handles) == 1:
+                response = self.client.delete_message(QueueUrl=self.destination, ReceiptHandle=recept_handles[0])
             else:
-                entries = [{'Id': str(uuid.uuid4()), 'ReceiptHandle': handle} for handle in recept_handle]
+                entries = [{'Id': str(uuid.uuid4()), 'ReceiptHandle': handle} for handle in recept_handles]
                 response = self.client.delete_message_batch(QueueUrl=self.destination, Entries=entries)
             logger.debug(response)
             logger.info('Successfully deleted the message/s')
